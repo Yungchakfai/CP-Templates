@@ -1,0 +1,47 @@
+struct Node{
+    // Node information
+    int l,r,res;
+    // initialize
+    Node(){res=0;}
+    // assignment
+    Node operator + (const Node &x)const{
+		return Node(sum+x.sum);
+	}
+};
+};
+struct PSegT{
+	int rt=0,root[N],pre[N];// root[i]为i版本的根编号  
+	Node val[50*N];
+	int build(int l,int r){
+	    int tnt=++rt;
+	    if(l==r) {
+            val[tnt].res=pre[l];
+		    return tnt;
+	    }
+	    int mid=(l+r)/2;
+	    val[tnt].l=build(l,mid);
+	    val[tnt].r=build(mid+1,r);
+	    return tnt;
+    }
+	int insert(int p,int l,int r,int pos,int k){
+	    int tnt=++rt;
+	    val[tnt]=val[p];
+	    if(l==r) {
+            val[tnt].res=k;
+            //cout<<pos<<" "<<k<<endl;
+		    return tnt;
+	    }
+	    int mid=(l+r)>>1;
+	    if(pos<=mid) val[tnt].l=insert(val[p].l,l,mid,pos,k);
+	    else val[tnt].r=insert(val[p].r,mid+1,r,pos,k);
+	    return tnt;
+    }
+	ll query(int p,int l,int r,int pos){ 
+        //cout<<l<<" "<<r<<" "<<val[p].res<<endl;
+	    if(l==r) 
+		    return val[p].res;
+	    int mid=(l+r)/2;
+	    if(pos<=mid) return query(val[p].l,l,mid,pos);
+	    else return query(val[p].r,mid+1,r,pos);
+    }
+}segt;

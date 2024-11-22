@@ -1,0 +1,102 @@
+template<int max_bit> // not inclusive
+struct xor_basis_online {
+
+    vector <xor_basis> basises[max_bit + 1];
+
+    int mx;
+
+    vector <pii> where;
+    vector <int> val;
+
+    xor_basis_online() : mx(0), cur_id(0) {}
+
+    int cur_id;
+
+    inline int add (int x) {
+        val.pb(x);
+        where.pb(make_pair(-1, -1));
+        int id = cur_id++;
+        if (x == 0) {
+            return id;
+        }
+        for (int i = mx; i >= 0; i--) {
+            if (basises[i].empty()) {
+                continue;
+            }
+            if (basises[i].back().add(x, id)) {
+                basises[i + 1].pb(basises[i].back());
+                basises[i].pop_back();
+                umax(mx, i + 1);
+                for (auto &j : basises[i + 1].back().basis) {
+                    where[j.id] = make_pair(i + 1, len(basises[i + 1]) - 1);
+                }
+                return id;
+            }
+        }
+        basises[1].pb(xor_basis());
+        basises[1].back().add(x, id);
+        where.back() = make_pair(1, len(basises[1]) - 1);
+        umax(mx, 1);
+        return id;
+    }
+
+    inline int move_back (int sz, int pos) {
+        int to = len(basises[sz]) - 1;
+        if (to == pos) {
+            return pos;
+        }
+        for (auto &i : basises[sz][pos].basis) {
+            where[i.id].second = to;
+        }
+        for (auto &i : basises[sz][to].basis) {
+            where[i.id].second = pos;
+        }
+        swap(basises[sz][pos], basises[sz][to]);
+        return to;
+    }
+
+    inline void del (int id) {
+        if (val[id] == 0) {
+            return;
+        }
+        int sz, pos;
+        tie(sz, pos) = where[id];
+        pos = move_back(sz, pos);
+        while (true) {
+            int bits = basises[sz].back().rebuild_and_delete(id);
+            int i = sz - 1;
+            while (i > 0 && basises[i].empty()) {
+                --i;
+            }
+            int new_id = -1;
+            if (i > 0) {
+                new_id = basises[i].back().get_the_same_high_bit(bits, val);
+            }
+            if (new_id == -1) {
+                if (sz > 1) {
+                    basises[sz - 1].pb(basises[sz].back());
+                    for (auto &j : basises[sz - 1].back().basis) {
+                        where[j.id] = make_pair(sz - 1, len(basises[sz - 1]) - 1);
+                    }
+                }
+                basises[sz].pop_back();
+                if (mx > 0 && basises[mx].empty()) {
+                    --mx;
+                }
+                return;
+            }
+            int cur = val[new_id];
+            assert(basises[sz].back().add(cur, new_id));
+            int new_sz = i;
+            int new_pos = len(basises[i]) - 1;
+            where[new_id] = make_pair(sz, pos);
+            id = new_id;
+            sz = new_sz;
+            pos = new_pos;
+        }
+    }
+
+    inline int size () {
+        return mx;
+    }
+};

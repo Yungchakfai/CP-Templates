@@ -1,0 +1,106 @@
+#define INF 0x7f7f7f7f
+struct node {
+	ll f, cnt, val, siz, son[2];
+}tree[maxn];
+ll n, Size, root;
+
+void update ( ll x ) {
+	tree[x].siz = tree[tree[x].son[0]].siz + tree[tree[x].son[1]].siz + tree[x].cnt;
+}
+
+void rotate ( ll x ) { 
+	ll fa = tree[x].f; 
+	ll Gfa = tree[fa].f;
+	ll k = ( tree[fa].son[1] == x );
+	tree[Gfa].son[tree[Gfa].son[1] == fa] = x;
+	tree[x].f = Gfa; 
+	tree[fa].son[k] = tree[x].son[k ^ 1];
+	tree[tree[x].son[k ^ 1]].f = fa;
+	tree[x].son[k ^ 1] = fa;
+	tree[fa].f = x;
+	update ( fa );
+	update ( x );
+}
+
+void splay ( ll x, ll goal ) {
+	while ( tree[x].f != goal ) {
+		ll fa = tree[x].f, Gfa = tree[fa].f;
+		if ( Gfa != goal )
+			( ( tree[Gfa].son[0] == fa ) ^ ( tree[fa].son[0] == x ) ) ? rotate ( x ) : rotate ( fa );
+		rotate ( x );
+	}
+	if ( ! goal )
+		root = x;
+}
+
+void insert ( ll x ) {
+	ll u = root, fa = 0;
+	while ( u && tree[u].val != x ) {
+		fa = u;
+		u = tree[u].son[x > tree[u].val]; 
+	}
+	if ( u ) 
+		tree[u].cnt ++;
+	else {
+		u = ++ Size; 
+		if ( fa ) 
+			tree[fa].son[x > tree[fa].val] = u;
+		tree[u].son[0] = tree[u].son[1] = 0;
+		tree[u].val = x;
+		tree[u].f = fa;
+		tree[u].cnt = tree[u].siz = 1;
+	}
+	splay ( u, 0 );
+}
+
+void find ( ll x ) {
+	if ( ! root )
+		return;
+	ll u = root;
+	while ( tree[u].son[x > tree[u].val] && x != tree[u].val )
+		u = tree[u].son[x > tree[u].val];
+	splay ( u, 0 ); 
+}
+
+ll PreSuf ( ll x, ll f ) { // f=0:lower_bound,f=1 upperbound
+	find ( x );
+	if ( tree[root].val > x && f )
+		return root;
+	if ( tree[root].val < x && ! f )
+		return root;
+	ll u = tree[root].son[f];
+	if ( ! u )
+		return 0;
+	while ( tree[u].son[f ^ 1] )
+		u = tree[u].son[f ^ 1];
+	return u;
+}
+
+void Delete ( ll x ) {
+	ll pre = PreSuf ( x, 0 ), suf = PreSuf ( x, 1 );
+	splay ( pre, 0 );
+	splay ( suf, pre );
+	ll u = tree[suf].son[0];
+	if ( tree[u].cnt > 1 ) {
+		tree[u].cnt --;
+		splay ( u, 0 );
+	}
+	else
+		tree[suf].son[0] = 0;
+}
+
+ll findkth ( ll x ) {
+	if ( tree[root].siz < x )
+		return -1;
+	ll u = root;
+	while ( 1 ) {
+		if ( x <= tree[tree[u].son[0]].siz )
+			u = tree[u].son[0];
+		else if ( x <= tree[u].cnt + tree[tree[u].son[0]].siz )
+				return u;
+			else {
+				x -= ( tree[tree[u].son[0]].siz + tree[u].cnt );
+				u = tree[u].son[1];
+			}
+	}
+}

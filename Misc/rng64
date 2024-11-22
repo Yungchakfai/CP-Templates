@@ -1,0 +1,6 @@
+long long rng(){
+  static long long x=88172645463325252LL;
+  x^=(x<<13);
+  x^=(x>>7);
+  return (x^=(x<<17));
+}

@@ -1,0 +1,102 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN=1000005;
+const int MAXC=26;
+
+struct AC_Automaton {
+    int trie[MAXN][MAXC], fail[MAXN], end[MAXN],Q[MAXN];
+    int tot;
+
+    void init() {
+        memset(trie, -1, sizeof(trie));
+        memset(fail, 0, sizeof(fail));
+        tot = 0;
+        memset(end, 0, sizeof(end));
+    }
+
+    void insert(string ch) {              //插入字符串到字典树中
+        int rt = 0, l = ch.size();
+        for (int i = 0; i < l; i++)
+        {
+            if (trie[rt][ch[i] - 'a'] == -1) trie[rt][ch[i] - 'a']= ++tot;
+            rt = trie[rt][ch[i] - 'a'];
+        }
+            end[rt]=1;
+    }
+    
+    void build()           //构建fail指针数组，相当于next数组，利用bfs求
+    {
+        queue<int>Q;
+        for(int i=0;i<MAXC;i++)       //初始化
+            if(trie[0][i]==-1)
+                trie[0][i]=0;         //将不存在的点指向根节点
+            else
+                Q.push(trie[0][i]);    //将与根节点直接相连的点入队
+        while(!Q.empty())
+        {
+            int rt=Q.front();
+            Q.pop();
+            end[rt]|=end[fail[rt]];
+            for(int i=0;i<MAXC;i++)
+            {
+                if(trie[rt][i]==-1)           //某一点无后续节点，将其连向失配指针所在位置
+                    trie[rt][i]=trie[fail[rt]][i];
+                else                            //有后续节点
+                {
+                    fail[trie[rt][i]]=trie[fail[rt]][i];     //其失配指针是从其父亲失配指针指向位置向后搜索i，若有则连接,若无连向根
+                    Q.push(trie[rt][i]);
+                }
+            }
+        }
+    }
+    int solve(string ch) {                         //求字典树中有多少字符串出现在ch中
+        int ret = 0, rt = 0, l = ch.size(),ans=-1;
+        for (int i = 0; i < l; i++) {
+            rt = trie[rt][ch[i] - 'a'];
+            for(int tem=rt;tem;tem=last[tem]){
+                //cout<<"check"<<*x[tem].rbegin()<<endl;
+                if(*x[tem].rbegin()>ans)
+                    ans=*x[tem].rbegin();
+            }
+        }
+        return ans;
+    }
+}ac;
+
+int main()
+{
+    std::ios::sync_with_stdio(false);
+    int n;
+    string a;
+    cin>>n;
+    ac.init();
+    while(n--)
+    {
+        cin>>a;
+        AC.insert(a);
+    }
+    ac.build();
+    string t;
+    cin>>t;
+    cout<<T.solve(t)<<endl;
+    return 0;
+}
+AC自动机上的动态规划
+Trie图上每个点都是一个状态，在AC自动机的状态相互装化，可以实现动态规划
+
+1.求模式串在原串中出现的次数：（所有模式串不同）
+构建Trie树时，在每个串结尾节点进行标记，在AC自动机上匹配时，每遇到一次结尾节点即表示成功匹配，ans++
+
+2.求模式串在原串中出现次数，若模式串B是模式串A的子串，则只记录A：
+构建Trie树时，在每个串结尾节点进行标记，在AC自动机上匹配时，对经过的子串模式串消除标记，其余与之前相同
+
+3.求原串中不包含任何模式串的串的种类数：
+对所有模式串构建AC自动机，模式串的终止的都是非法的，不可经过
+dp[i][j]表示长度为i，状态为j的字符串的种类数，枚举所有字符进行状态匹配，答案即为sum(dp[m][i])
+若m较小，n较大，可以考虑用矩阵乘法加速dp
+
+4.求一个长度最短的串使得它包含所有模式串：
+对所有模式串建立AC自动机，若n很小，可用状态压缩dp
+二进制状态j&2^k表示从根节点到该结点的路径上有第k个模式串 dp[i][j]表示状态i，二进制状态j的最短长度，初始化dp[i][j]=0
+在Trie上求(0,0)到(i,2n-1)点的最短路，答案即是dp[i][2-1]

@@ -1,0 +1,33 @@
+struct node
+{
+    int l, r;
+    mutable ll v;
+    bool operator<(const node &o) const { return l < o.l; }
+};
+int N'
+set<node> tree;
+set<node>::iterator split(int p)
+{
+    auto it = tree.lower_bound(node{p, 0, 0});
+    if (it != tree.end() && it->l == p)
+        return it;
+    --it;
+    int l = it->l, r = it->r;
+    ll v = it->v;
+    tree.erase(it);
+    tree.insert(node{l, p, v});
+    return tree.insert(node{p, r, v}).first;
+}
+void assign(int l, int r, int x)
+{
+    auto ed = split(r), bg = split(l);
+    tree.erase(bg, ed);
+    tree.insert(node{l, r, x});
+}
+void performance(int l, int r, int x)
+{
+    auto ed = split(r), bg = split(l);
+    for (auto it = bg; it != ed; ++it){
+        //
+    }
+}

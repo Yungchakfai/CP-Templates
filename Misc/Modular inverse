@@ -1,0 +1,22 @@
+ll exgcd(ll a,ll b,ll *x,ll *y){
+    if(b==0){
+        *x=1,*y=0;
+        return a;
+    }
+    ll res=exgcd(b,a%b,x,y);
+    ll tem=*x;
+    *x=*y;
+    *y=tem-a/b*(*y);
+    return res;
+}
+ll gcd(ll a,ll b){
+    if(b==0)
+        return a;
+    return gcd(b,a%b);
+}
+ll modinv(ll num,ll m){
+    if(gcd(num,m)!=1)
+        return -1;
+    exgcd(num,m,&x,&y)
+    return (x%n+n)%n
+}

@@ -1,0 +1,150 @@
+#include <bits/stdc++.h>
+using namespace std;
+typedef long long ll;
+typedef pair<ll,ll> du;
+typedef tuple<ll,ll,ll> tri;
+#define INF (long long)1e18
+#define mod 998244353
+#define eps 1e-10
+#define N (ll)2e5+5
+struct two_SAT
+{
+    int n; //未翻倍之前的点数
+    bool in_stack[N];
+    int id[N], stk[N], top, dfn[N], low[N], times, scc_cnt; //所在scc编号，栈，dfs序，最下能到哪个节点，时间戳，scc编号
+    int h[4*N], e[4*N], ne[4*N], idx;
+    void init(int _n){
+        n = _n;
+        memset(h, -1, sizeof h), idx = 0;
+		memset(id, 0, sizeof id);
+        memset(dfn, 0, sizeof dfn);
+        memset(low, 0, sizeof low);
+        times = top = scc_cnt = 0;
+    }
+    void add(int a, int b){
+        e[idx] = b;
+        ne[idx] = h[a];
+        h[a] = idx++;
+    }
+    void add_and(int x,int valx,int y,int valy) // if x choose valx then y choose valy
+	{
+        //x -> y or !x -> y or x -> !y or !x -> !y
+        add(x + valx * n, y + valy * n);
+    }
+    void add_or(int x, int valx, int y, int valy) //x choose valx or y choose valy
+    {
+        add(x + (!valx) * n, y + valy * n);
+        add(y + (!valy) * n, x + valx * n);
+    }
+	void add_xor(int x, int y) //x choose valx or y choose valy
+    {
+        add(x + 1* n, y + 0 * n);
+        add(y + 0 * n, x + 1 * n);
+    }
+    void tarjan(int u)
+    {
+        dfn[u] = low[u] = ++times;
+        stk[++top] = u, in_stack[u] = true;
+        for (int i = h[u]; ~i; i = ne[i])
+        {
+            int j = e[i];
+            if (!dfn[j])
+            {
+                tarjan(j);
+                low[u] = min(low[u], low[j]);
+            }
+            else if (in_stack[j])
+            {
+                low[u] = min(low[u], dfn[j]);
+            }
+        }
+        if (dfn[u] == low[u])
+        {
+            ++scc_cnt;
+            int y;
+            do
+            {
+                y = stk[top--];
+                in_stack[y] = false;
+                id[y] = scc_cnt;
+            } while (y != u);
+        }
+    }
+    void tarjan()
+    {
+        for(int i=1;i<=(n<<1);i++) 
+			if(!dfn[i])
+            	tarjan(i);
+    }
+    bool solve()
+    {
+        tarjan();
+        for (int i = 1; i <= n; i++)
+        {
+            if (id[i] == id[i + n])
+                return false;
+        }
+        return true;
+    }
+    void print()
+    {
+        for (int i = 1; i <= n; i++)
+        {
+            if (id[i] > id[i + n])
+                printf("1 "); //1
+            else
+                printf("0 "); //0
+        }
+    }
+} t;
+ll n,m,a[100005],b[100005],u[100005],v[100005];
+ll check(ll x){
+	t.init(n);
+	for(ll i=1;i<=m;i++){
+		ll tu=u[i],tv=v[i];
+		//cout<<a[tu]<<" "<<a[tv]<<endl;
+		if(abs(a[tu]-a[tv])>x){
+			t.add_and(tu,0,tv,1);
+			t.add_and(tv,0,tu,1);
+		}
+		if(abs(a[tu]-b[tv])>x){
+			t.add_and(tu,0,tv,0);
+			t.add_and(tv,1,tu,1);
+		}
+		if(abs(b[tu]-a[tv])>x){
+			t.add_and(tu,1,tv,1);
+			t.add_and(tv,0,tu,0);
+		}
+		if(abs(b[tu]-b[tv])>x){
+			t.add_and(tu,1,tv,0);
+			t.add_and(tv,1,tu,0);
+		}
+	}
+	//cout<<x<<endl;
+	//t.print();
+	return t.solve();
+}
+int main(){
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+	cout.tie(0);
+	cin>>n>>m;
+	for(ll i=1;i<=n;i++)
+		cin>>a[i];
+	for(ll i=1;i<=n;i++)
+		cin>>b[i];
+	for(ll i=1;i<=m;i++){
+		cin>>u[i]>>v[i];
+	}
+	ll l=0,r=1e9,mid,ans;
+	while(l<=r){
+		mid=(l+r)/2;;
+		if(check(mid))
+			ans=mid,r=mid-1;
+		else
+			l=mid+1;
+	}
+	
+	cout<<ans<<endl;
+	return 0;
+}

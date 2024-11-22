@@ -1,0 +1,34 @@
+struct btrie{
+    const int maxnode = 1e5+5;
+    const int up = 30;
+    int n,d[maxnode],trie[maxnode*32][2],tot=0,ans;
+
+    void insert(int x)
+    {
+        int p=0;
+        for(int i=up;i>=0;i--)
+        {
+            int id = (x>>i)&1;  
+            if(!trie[p][id]) trie[p][id]=++tot;
+            p=trie[p][id];
+        }
+    }
+
+    int max_xor(int x)
+    {
+        int p=0,sum=0;
+        for(int i=up;i>=0;i--) from 2^up to 1   
+        {
+            int id = (x>>i)&1;
+            if(trie[p][id^1]){
+                sum = (sum<<1)|1 ;  // sum=sum*2+1
+                p = trie[p][id^1];
+            }
+            else{
+                sum<<=1;
+                p=trie[p][id];
+            }
+        }
+        return sum;
+        }
+}trie;

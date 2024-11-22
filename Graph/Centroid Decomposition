@@ -1,0 +1,84 @@
+#include <bits/stdc++.h>
+using namespace std;
+using ll = long long;
+const ll MAXN = 100005, MAXK = 505;
+vector<ll> adj[MAXN];
+namespace CenDec
+{
+ll ctr, n, sz[MAXN];       //ctr:temporary centroid
+bool del[MAXN];             // 点是否已被删除
+void dfs(ll p, ll fa = 0) // 找一个重心
+{
+    sz[p] = 1;
+    ll mss = 0;
+    for (auto to : adj[p])
+        if (!del[to] && to != fa)
+        {
+            dfs(to, p);
+            if (ctr != -1) return; // 找到重心后及时退出
+            mss = max(mss, sz[to]);
+            sz[p] += sz[to];
+        }
+    mss = max(mss, n - sz[p]);
+    if (mss <= n / 2)
+    {
+        ctr = p;
+        sz[fa] = n - sz[p]; // 把sz[fa]修正成以ctr为根节点时的值
+    }
+}
+ll k, temp[MAXN], cntt, cnt, lens[MAXK];
+void dfs2(ll p, ll fa, ll len) // 遍历一个节点的某个子树
+{
+    if (len > k) return;               // 剪枝
+    cnt += lens[k - len] + (len == k); // 更新最终答案
+    temp[cntt++] = len;                // 存入新的路径长
+    for (auto to : adj[p])
+        if (!del[to] && to != fa)
+            dfs2(to, p, len + 1);
+}
+void run(ll p)
+{
+    // 先统计经过p点的答案
+    for (auto to : adj[p])
+        if (!del[to])
+        {
+            dfs2(to, p, 1);
+            for (ll i = 0; i < cntt; ++i) // 将临时数组里的数据腾出来
+                lens[temp[i]]++;
+            cntt = 0; // 清空临时数组
+        }
+    fill(lens, lens + MAXK, 0);
+    // 再统计不经过p点的答案
+    del[p] = 1;
+    for (auto to : adj[p])
+        if (!del[to])
+        {
+            n = sz[to];
+            ctr = -1;
+            dfs(to);  // 找到重心
+            run(ctr); // 递归处理
+        }
+}
+ll count(ll n0, ll k0)
+{
+    n = n0, k = k0, ctr = -1;
+    // fill(del + 1, del + n + 1, 0);
+    dfs(1);
+    run(ctr);
+    return cnt;
+}
+} // namespace CenDec
+int main()
+{
+    ios::sync_with_stdio(false);
+    ll n, k, u, v;
+    cin >> n >> k;
+    for (ll i = 0; i < n - 1; ++i)
+    {
+        cin >> u >> v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    cout << CenDec::count(n, k) << endl;
+    return 0;
+}

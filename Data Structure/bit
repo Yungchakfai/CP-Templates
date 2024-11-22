@@ -1,0 +1,40 @@
+struct ft{
+    ll tree[300025],n,sz=0;
+    void init(ll _n){
+        n=_n;
+        while((1ll<<sz)<=n)
+          sz++;
+        for(ll i=1;i<=n;i++)
+            tree[i]=0;
+    }
+    void update(ll pos,ll x){
+        while(pos<=n){
+            tree[pos]+=x;
+            pos+= pos&-pos;
+        }
+        return ;
+    }
+    ll query(ll l,ll r){
+        if(l>r)
+          return 0;
+        if(l!=1)
+            return query(1,r)-query(1,l-1);
+        ll res=0;
+        while(r){
+            res+=tree[r];
+            r-= r&-r;
+        }
+        return res;
+    }
+    ll bs(ll x){
+      ll pos=0,sum=query(1,n);
+      for(ll i=sz;i>=0;i--){
+        ll jump=1ll<<i;
+        if(pos+jump>n)
+          continue;
+        if(tree[pos+jump]-sum>=x)
+          pos+=jump,sum-=tree[pos];
+      }
+      return pos;
+    }
+}bit;

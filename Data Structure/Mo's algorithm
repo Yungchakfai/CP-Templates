@@ -1,0 +1,18 @@
+struct query{
+    ll l,r,block,id;
+    inline bool operator<(const query&b)const{
+        return (block^b.block)?block<b.block:((block&1)?r<b.r:r>b.r);
+    }
+}Q[1000005];
+void remove(ll pos){
+}
+void add(ll pos){
+}
+    l=1,r=0;
+    for(ll i=1;i<=q;i++){
+        while(l<Q[i].l)remove(l++);
+        while(l>Q[i].l)add(--l);
+        while(r>Q[i].r)remove(r--);
+        while(r<Q[i].r)add(++r);
+        ans[Q[i].id]=res;
+    }

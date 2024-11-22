@@ -1,0 +1,65 @@
+#include <bits/stdc++.h>
+using namespace std;
+using ll = long long;
+const ll MAXN = 100005, MAXK = 505;
+vector<ll> adj[MAXN],cdt[MAXN];
+namespace CenDec
+{
+ll ctr, n, sz[MAXN];       //ctr:temporary centroid
+bool del[MAXN];             // 点是否已被删除
+void dfs(ll p, ll fa = 0) // 找一个重心
+{
+    sz[p] = 1;
+    ll mss = 0;
+    for (auto to : adj[p])
+        if (!del[to] && to != fa)
+        {
+            dfs(to, p);
+            if (ctr != -1) return; // 找到重心后及时退出
+            mss = max(mss, sz[to]);
+            sz[p] += sz[to];
+        }
+    mss = max(mss, n - sz[p]);
+    if (mss <= n / 2)
+    {
+        ctr = p;
+        sz[fa] = n - sz[p]; // 把sz[fa]修正成以ctr为根节点时的值
+    }
+}
+void run(ll p)
+{
+    // 先统计经过p点的答案
+    // 再统计不经过p点的答案
+    del[p] = 1;
+    for (auto to : adj[p])
+        if (!del[to])
+        {
+            n = sz[to];
+            ctr = -1;
+            cdt[to].push_back(p);
+            cnt[p].push_back(to);
+            dfs(to);  // 找到重心
+            run(ctr); // 递归处理
+        }
+}
+void init()
+{
+    dfs(1);
+    run(ctr);
+    return ;
+}
+} // namespace CenDec
+int main()
+{
+    ios::sync_with_stdio(false);
+    ll n, k, u, v;
+    cin >> n >> k;
+    for (ll i = 0; i < n - 1; ++i)
+    {
+        cin >> u >> v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    cout << CenDec::count(n, k) << endl;
+    return 0;
+}

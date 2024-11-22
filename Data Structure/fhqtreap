@@ -1,0 +1,92 @@
+#include<bits/stdc++.h>
+using namespace std;
+const int N=1e5+10;
+struct node{
+    int x,rnd,size;
+    int ls,rs;
+}tr[N];
+struct btree{
+    int tot=0,root=0;
+    void pushup(int x){
+        tr[x].size=tr[tr[x].ls].size+tr[tr[x].rs].size+1;
+    }
+    int newNode(int x){
+        tr[++tot]={x,rand(),1,0,0};
+        return tot;
+    }
+    void split(int u,int &x,int &y,int val){//split by value
+        if(!u){
+            x=y=0;
+            return;
+        }
+        if(tr[u].x<=val) x=u,split(tr[x].rs,tr[x].rs,y,val);
+        else y=u,split(tr[y].ls,x,tr[y].ls,val);
+        pushup(u);
+    }
+    int merge(int x,int y){// merge tree with root x and y;
+        if(!x||!y) return x+y;
+        if(tr[x].rnd<tr[y].rnd){
+            tr[x].rs=merge(tr[x].rs,y);
+            pushup(x);
+            return x;
+        }
+        else{
+            tr[y].ls=merge(x,tr[y].ls);
+            pushup(y);
+            return y;
+        }
+    }
+    void insert(int x){// 
+        int l,r;
+        split(root,l,r,x);
+        root=merge(merge(l,newNode(x)),r);
+    }
+    void del(int x){
+        int l,r,xx,yy;
+        split(root,l,r,x);
+        split(l,xx,yy,x-1);
+        yy=merge(tr[yy].ls,tr[yy].rs);// del the root yy
+        root=merge(merge(xx,yy),r);
+}
+    int rnk(int x){
+        int l,r;
+        split(root,l,r,x-1);
+        int tmp=tr[l].size+1;
+        root=merge(l,r);
+        return tmp;
+    }
+    int kth(int u,int k){
+        int p=tr[tr[u].ls].size+1;
+        if(p==k) return tr[u].x;
+        if(p<k) return kth(tr[u].rs,k-p);
+        return kth(tr[u].ls,k);
+    }
+    int pre(int x){
+        int l,r;
+        split(root,l,r,x-1);
+        int tmp=kth(l,tr[l].size);
+        root=merge(l,r);
+        return tmp;
+    }
+    int nxt(int x){
+        int l,r;
+        split(root,l,r,x);
+        int tmp=kth(r,1);
+        root=merge(l,r);
+        return tmp;
+    }
+}
+int n;
+int main(){
+    cin>>n;
+    while(n--){
+        int opt,x;
+        cin>>opt>>x;
+        if(opt==1) insert(x);
+        if(opt==2) del(x);
+        if(opt==3) cout<<rnk(x)<<endl;
+        if(opt==4) cout<<kth(root,x)<<endl;
+        if(opt==5) cout<<pre(x)<<endl;
+        if(opt==6) cout<<nxt(x)<<endl;
+    }
+}

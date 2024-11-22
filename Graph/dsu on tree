@@ -1,0 +1,38 @@
+ll res, ans[200005];
+ll sz[200005], hson[200005], L[200005], R[200005], node[200005], cdfsn=0;
+void dfs0(int u, int fa = -1) {
+    L[u] = ++cdfsn;
+    node[cdfsn] = u;
+    ll ma = 0, size = 1;
+    for (auto v : adj[u])
+        if (v != fa) {
+            dfs0(v, u);
+            size += sz[v];
+            if (sz[v] > ma) hson[u] = v, ma = sz[v];
+        }
+    sz[u] = size;
+    R[u] = cdfsn;
+}
+void add(ll u){
+    // calculating the result after adding node u to the subtree
+}
+void del(ll u){
+    // remove the change in info after deleting node u to the subtree
+}
+void dfs(int u, int fa = -1, bool keep = 1) {
+    for (auto v : adj[u])
+        if (v != fa && v != hson[u])
+            dfs(v, u, 0);
+    if (hson[u]) dfs(hson[u], u, 1);
+    add(u);
+    for (auto v : adj[u])
+        if (v != fa && v != hson[u])
+            for (int i = L[v]; i <= R[v]; ++i)
+                add(node[i]);
+    ans[u] = sum;
+    if (!keep) {
+        for (int i = L[u]; i <= R[u]; ++i)
+            del(node[i]);
+        maxn = sum = 0;
+    }
+}
