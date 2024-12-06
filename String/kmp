@@ -1,0 +1,32 @@
+int main(){
+	string s;
+	cin >> s;
+	int n = (int)s.size();
+	s = " " + s;
+
+	vector<int> nxt(n + 1);
+	for (int i = 2, p = 0; i <= n; i++) {
+		while (p && s[p + 1] != s[i]) p = nxt[p];
+		p = nxt[i] = p + (s[p + 1] == s[i]);
+	}
+
+
+	string t;
+	cin >> t;
+	int m = (int)t.size();
+	t = " " + t;
+	for (int i = 1, p = 0; i <= m; i++) {
+		while (p && s[p + 1] != t[i]) p = nxt[p];
+		p += (s[p + 1] == t[i]);
+		if (p == n) {
+			cout << i - n + 1 << "\n";
+			p = nxt[p];
+		}
+	}
+
+	for (int i = 1; i <= n; i++) {
+		cout << nxt[i] << "\n";
+	}
+
+	return 0;
+}
