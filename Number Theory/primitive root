@@ -1,0 +1,15 @@
+// 前置：找质因数（无重复）
+ll primitive_root(ll p) {
+    vector<ll> facs = getf(p - 1);
+    for (ll i = 2; i < p; i++) {
+        bool flag = true;
+        for (ll x : facs) {
+            if (qk(i, (p - 1) / x, p) == 1) {
+                flag = false;
+                break;
+            }
+        }
+        if (flag) return i;
+    }
+    return -1;
+}
